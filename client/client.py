@@ -4,7 +4,7 @@ import applications
 import argparse
 
 def main():
-    parser = argparse.ArgumentParser(description='Remote Apps')
+    parser = argparse.ArgumentParser(description='X11Forwarder')
 
     subparsers = parser.add_subparsers(dest='command')
 
