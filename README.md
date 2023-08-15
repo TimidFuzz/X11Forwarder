@@ -31,7 +31,7 @@ Please enter your selection> 2
 Please enter the name of the package to install> firefox
 Suggested package: firefox.x86_64
 Please enter the package you would like to install (Press enter to use suggested)> 
-Please enter command to launch the application (Press enter to use package name)> 
+Please enter the command to launch the application (Press enter to use package name)> 
 Enter the name of the container> Browser            
 Do you want the container to be persistent?> 
 Using server with IP localhost and port 8471

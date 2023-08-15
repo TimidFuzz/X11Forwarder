@@ -3,7 +3,42 @@ import os
 
 import random
 
+from configparser import ConfigParser
+
 client = docker.from_env()
+
+def remove_application(container_id):
+    try:
+        # Fetch & Delete docker container 
+        container = client.containers.get(container_id)
+        container.stop()
+        container.remove()
+
+        # Delete the docker image
+        image_id = container.image.id
+
+        client.images.remove(image_id, force=True)
+        
+        # Delete the configuration file
+        for file in os.listdir('./config'):
+            if file.endswith('.ini'):
+                config_file = f'./config/{file}'
+
+                config = ConfigParser()
+                config.read(config_file)
+                
+                if config.get('Container', 'container_id') == container_id:
+                    os.remove(config_file)
+                    
+                    return {
+                        'status': 'completed'
+                    }
+        
+    except Exception as e:
+        return {
+            'status': 'failed',
+            'error': f'{e}'
+        }
 
 def build_docker_container(image_name, packages, exec):
     dockerfile_path = os.path.expanduser('~/.remote_apps/config/Dockerfile')

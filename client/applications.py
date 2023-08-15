@@ -56,7 +56,25 @@ def list_remote_apps(args):
             print('---')
 
 def remove_container(container_id):
-    pass
+    server_ip, server_port = get_server()
+
+    socket = sock.TCPClient(server_ip, server_port)
+    socket.connect()   
+
+    message = {
+        'action': 'remove',
+        'container_id' : container_id
+    }
+
+    socket.send(json.dumps(message))
+    
+    response = socket.response()
+    response = json.loads(response)
+
+    if response['status'] == 'completed':
+        print(f'Deleted {container_id} successfully')
+    elif response['status'] == 'failed':
+        print(response['error'])
 
 def launch_remote_app(identifier):
     server_ip, server_port = get_server()
@@ -127,17 +145,17 @@ def new_remote_application(args):
             if not package_to_install:
                 package_to_install = suggestion
             
-            exec_command = input('Please enter command to launch the application (Press enter to use package name)> ')
+            exec_command = input('Please enter the command to launch the application (Press enter to use suggested)> ')
 
             if not exec_command:
                 exec_command = choice
 
-            container_name = input('Enter the name of the container> ')
+            container_name = input('Enter the name of the container (Press enter to use suggested)> ')
 
             if not container_name:
                 container_name = choice
             
-            container_persistent = True if 'yes' == input('Do you want the container to be persistent?> ').lower() else False
+            container_persistent = True if 'yes' == input('Do you want the container to be persistent? (Press enter to use suggested)> ').lower() else False
             
             # Choose server
             server_ip, server_port = get_server()

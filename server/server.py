@@ -93,8 +93,15 @@ class TCPServer:
                     }).encode())
 
                 elif data['action'] == 'launch':    
-                    client_socket.send(json.dumps(applications.start_container(data['container_id'])).encode())
-                        
+                    response = applications.start_container(data['container_id'])
+
+                    client_socket.send(json.dumps(response).encode())
+
+                elif data['action'] == 'remove':    
+                    response = applications.remove_application(data['container_id'])
+
+                    client_socket.send(json.dumps(response).encode())
+
             except Exception as e:
                 print(e)
                 break
@@ -111,6 +118,6 @@ class TCPServer:
 # Perform checks before starting server 
 if not os.path.isdir('config'):
     os.makedirs('config')
-    
+
 server = TCPServer('127.0.0.1', 8471)
 server.start()
