@@ -108,5 +108,9 @@ class TCPServer:
 
         self.server_socket.close()
 
+# Perform checks before starting server 
+if not os.path.isdir('config'):
+    os.makedirs('config')
+    
 server = TCPServer('127.0.0.1', 8471)
 server.start()
