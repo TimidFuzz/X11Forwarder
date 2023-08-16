@@ -20,22 +20,23 @@ def get_server():
     
     IP = server_config.get('Server', 'ip')
     PORT = server_config.get('Server', 'port')
+    password = server_config.get('Server', 'password')
     
     PORT = int(PORT) if type(PORT) == str else PORT
 
-    return IP, PORT
+    return IP, PORT, password
     
 def list_remote_apps(args):
     """
     Lists all remote applications on the server
     """
-    server_ip, server_port = get_server()
+    server_ip, server_port, password = get_server()
 
     print(f'Using server with IP {server_ip} and port {server_port}')
     print('Fetching list of remote apps')
 
     # Establishes a new connection
-    socket = sock.TCPClient(server_ip, server_port)
+    socket = sock.TCPClient(server_ip, server_port, password)
     socket.connect()   
 
     message = {
@@ -64,10 +65,10 @@ def remove_container(container_id):
     """
     Removes a remote container
     """
-    server_ip, server_port = get_server()
+    server_ip, server_port, password = get_server()
 
     # Establishes a connection
-    socket = sock.TCPClient(server_ip, server_port)
+    socket = sock.TCPClient(server_ip, server_port, password)
     socket.connect()   
 
     message = {
@@ -89,10 +90,10 @@ def launch_remote_app(identifier):
     """
     Retrieves the ssh port of the container and launches a new instance via SSH
     """
-    server_ip, server_port = get_server()
+    server_ip, server_port, password = get_server()
 
     # Establishes a new connection
-    socket = sock.TCPClient(server_ip, server_port)
+    socket = sock.TCPClient(server_ip, server_port, password)
     socket.connect()   
 
     message = {
@@ -108,7 +109,6 @@ def launch_remote_app(identifier):
     if response['status'] == 'success':
         port = response['ports']
         username = 'root'
-        password = 'password'
 
         if 'warning' in response:
             print(response['warning'])
@@ -182,13 +182,13 @@ def new_remote_application(args):
             container_persistent = True if 'yes' == input('Do you want the container to be persistent? (Press enter to use suggested)> ').lower() else False
             
             # Choose server
-            server_ip, server_port = get_server()
+            server_ip, server_port, password = get_server()
 
             print(f'Using server with IP {server_ip} and port {server_port}')
             print('Building app. This may take a while...')
 
             # Establish a new connection
-            socket = sock.TCPClient(server_ip, server_port)
+            socket = sock.TCPClient(server_ip, server_port, password)
             socket.connect()   
 
             message = {
@@ -229,7 +229,6 @@ def setup_server_config(args):
         server_name = input('Enter server name: ')
         server_ip = input('Enter server IP address: ')
         server_port = input('Enter port number: ')
-        username = input('Enter username for authentication (Leave empty if no authentication is set up): ')
         password = input('Enter password for authentication (Leave empty if no authentication is set up): ')
 
         hash = hashlib.md5()
@@ -242,7 +241,6 @@ def setup_server_config(args):
         config.set('Server', 'Name', server_name)
         config.set('Server', 'IP', server_ip)
         config.set('Server', 'Port', server_port)
-        config.set('Server', 'Username', username)
         config.set('Server', 'Password', hash)
 
         config_file = os.path.expanduser('~/.remote_apps/config/server.ini')

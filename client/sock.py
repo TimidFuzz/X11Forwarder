@@ -3,12 +3,13 @@ import threading
 import json
 
 class TCPClient:
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, password):
         """
         Initialize the TCP client that connects to the server 
         """
         self.ip = ip
         self.port = port
+        self.password = password
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def connect(self):
@@ -16,6 +17,14 @@ class TCPClient:
         Connects to a server 
         """
         self.socket.connect((self.ip, self.port))
+
+        # Authentication
+        self.send(self.password)
+
+        response = json.loads(self.response())
+
+        if response['status'] != 'completed':
+            print(response['error'])
 
     def response(self):
         """

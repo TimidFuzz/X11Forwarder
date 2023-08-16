@@ -16,7 +16,7 @@ def list_apps():
 
     # Loop through the files in the directory and read the configuration files
     for filename in os.listdir('./config'):
-        if filename.endswith('.ini'):
+        if filename != 'server.ini' and filename.endswith('.ini'):
             config_file = f"./config/{filename}"
 
             config = ConfigParser()
@@ -57,12 +57,14 @@ def remove_application(container_id):
         
         # Delete the configuration file
         for file in os.listdir('./config'):
-            if file.endswith('.ini'):
+            if file.endswith('.ini') and file != 'server.ini' :
                 config_file = f'./config/{file}'
 
                 config = ConfigParser()
                 config.read(config_file)
                 
+                print(config_file)
+
                 if config.get('Container', 'container_id') == container_id:
                     os.remove(config_file)
                     
@@ -76,7 +78,7 @@ def remove_application(container_id):
             'error': f'{e}'
         }
 
-def build_docker_image(image_name, packages, exec):
+def build_docker_image(image_name, packages, exec, password):
     """
     Build a docker omage based on the packages to install
     """
@@ -109,7 +111,7 @@ EXPOSE 22
 CMD /usr/sbin/sshd && Xvfb :1 -screen 0 1024x768x16
 ENV DISPLAY=:1
 
-RUN echo 'root:password' | chpasswd
+RUN echo 'root:{password}' | chpasswd
 ''')
 
     try:
@@ -153,7 +155,7 @@ def create_config(image_name, volume_name, container_name, image_id, container_i
     with open(config_file, 'w') as file:
         config.write(file)
 
-def create_container(name, packages, exec, persistent):
+def create_container(name, packages, exec, persistent, password):
     """
     Create a new container for the app 
     """
@@ -163,7 +165,7 @@ def create_container(name, packages, exec, persistent):
 
     try:
         # Build the image
-        output = build_docker_image(name, packages, exec)
+        output = build_docker_image(name, packages, exec, password)
         
         if output['status'] == 'failed':
             return output

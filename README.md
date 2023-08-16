@@ -11,6 +11,7 @@ Access and manage applications running in a docker container remotely via SSH X1
 - Launch a new window via SSH
 - List remote applications
 
+*Currently only supports Fedora systems*
 
 
 
