@@ -10,10 +10,10 @@ import utils
 import sock
 import json
 
-def check_config():
-    pass
-
 def get_server():
+    """
+    Retrieve server IP and port from configuration file
+    """
     server_config = ConfigParser()
 
     server_config.read(os.path.expanduser('~/.remote_apps/config/server.ini'))
@@ -26,18 +26,23 @@ def get_server():
     return IP, PORT
     
 def list_remote_apps(args):
+    """
+    Lists all remote applications on the server
+    """
     server_ip, server_port = get_server()
 
     print(f'Using server with IP {server_ip} and port {server_port}')
     print('Fetching list of remote apps')
 
+    # Establishes a new connection
     socket = sock.TCPClient(server_ip, server_port)
     socket.connect()   
 
     message = {
         'action': 'list'
     }
-
+    
+    # Sends the command 
     socket.send(json.dumps(message))
 
     response = json.loads(socket.response())
@@ -56,8 +61,12 @@ def list_remote_apps(args):
             print('---')
 
 def remove_container(container_id):
+    """
+    Removes a remote container
+    """
     server_ip, server_port = get_server()
 
+    # Establishes a connection
     socket = sock.TCPClient(server_ip, server_port)
     socket.connect()   
 
@@ -77,8 +86,12 @@ def remove_container(container_id):
         print(response['error'])
 
 def launch_remote_app(identifier):
+    """
+    Retrieves the ssh port of the container and launches a new instance via SSH
+    """
     server_ip, server_port = get_server()
 
+    # Establishes a new connection
     socket = sock.TCPClient(server_ip, server_port)
     socket.connect()   
 
@@ -100,6 +113,7 @@ def launch_remote_app(identifier):
         if 'warning' in response:
             print(response['warning'])
 
+        # SSH into remote container
         ssh_command = f'sshpass -p {password} ssh -X -p {port} -o StrictHostKeyChecking=no {username}@{server_ip}'
 
         subprocess.run(ssh_command, shell=True)
@@ -110,6 +124,9 @@ def launch_remote_app(identifier):
         print('An unknown error occured')
 
 def list_local_applications():
+    """
+    Extract the installed applications from the desktop files
+    """
     applications = [re.search(r'([^/]+)\.desktop$', app).group(1) for app in utils.get_desktop_apps()]
     applications = [re.sub(r'org', '', app) for app in applications]
     applications = [app.replace('.', '-') for app in applications]
@@ -121,6 +138,9 @@ def list_local_applications():
     print(applications)
 
 def new_remote_application(args):
+    """
+    Initiates the creation of a new remote application
+    """
     print('Please select one of the following options to create a new application: ')
     print('1) List local applications to transfer')
     print('2) Configure a new remote application')
@@ -140,29 +160,34 @@ def new_remote_application(args):
             else:
                 print(f'Suggested package: {suggestion}')
 
+            # Choose the package to be installed
             package_to_install = input('Please enter the package you would like to install (Press enter to use suggested)> ')
 
             if not package_to_install:
                 package_to_install = suggestion
             
+            # Choose the command that will be used to launch the application e.g libreoffice --writer
             exec_command = input('Please enter the command to launch the application (Press enter to use suggested)> ')
-
+            
             if not exec_command:
                 exec_command = choice
 
+            # Choose the name of the container
             container_name = input('Enter the name of the container (Press enter to use suggested)> ')
-
+            
             if not container_name:
                 container_name = choice
             
+            # Choose whether container should be persistent (volume will be mounted)
             container_persistent = True if 'yes' == input('Do you want the container to be persistent? (Press enter to use suggested)> ').lower() else False
             
             # Choose server
             server_ip, server_port = get_server()
 
             print(f'Using server with IP {server_ip} and port {server_port}')
-            print('Building app...')
+            print('Building app. This may take a while...')
 
+            # Establish a new connection
             socket = sock.TCPClient(server_ip, server_port)
             socket.connect()   
 
@@ -190,6 +215,9 @@ def new_remote_application(args):
             return
 
 def setup_server_config(args):
+    """
+    Creates a server configuration file 
+    """
     if not os.path.exists(os.path.expanduser('~/.remote_apps/config')):
         print('First time running...')
         print('Creating necessary configuartion files...')
@@ -198,11 +226,11 @@ def setup_server_config(args):
 
         print('No configuration file. Please answer the following questions to create one')
         
-        server_name = input("Enter server name: ")
-        server_ip = input("Enter server IP address: ")
-        server_port = input("Enter port number: ")
-        username = input("Enter username for authentication (Leave empty if no authentication is set up): ")
-        password = input("Enter password for authentication (Leave empty if no authentication is set up): ")
+        server_name = input('Enter server name: ')
+        server_ip = input('Enter server IP address: ')
+        server_port = input('Enter port number: ')
+        username = input('Enter username for authentication (Leave empty if no authentication is set up): ')
+        password = input('Enter password for authentication (Leave empty if no authentication is set up): ')
 
         hash = hashlib.md5()
         hash.update(password.encode('utf-8'))
@@ -221,7 +249,7 @@ def setup_server_config(args):
         with open(config_file, 'w') as file:
             config.write(file)
 
-        print("Server configuration created successfully!")
+        print('Server configuration created successfully!')
 
     else:
         print('Delete the directory ~/.remote_apps/config first')
