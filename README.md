@@ -71,6 +71,8 @@ cd X11Forwarder/server/
 python3 server.py
 ```
 
+The configuration for the server can be found in the config directory. It will be newly created if it does not exist. 
+
 Using the client cli tool
 ```bash
 cd X11Forwarder/client/

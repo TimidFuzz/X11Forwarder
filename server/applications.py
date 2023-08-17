@@ -62,8 +62,6 @@ def remove_application(container_id):
 
                 config = ConfigParser()
                 config.read(config_file)
-                
-                print(config_file)
 
                 if config.get('Container', 'container_id') == container_id:
                     os.remove(config_file)
